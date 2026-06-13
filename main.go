@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -11,14 +12,17 @@ import (
 
 func main() {
 	t := time.Now()
+	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {
-		go getHttpStatus()
+		wg.Add(1)
+		go getHttpStatus(&wg)
 	}
-	time.Sleep(time.Millisecond * 1500)
+	wg.Wait()
 	fmt.Println(time.Since(t))
 }
 
-func getHttpStatus() {
+func getHttpStatus(wg *sync.WaitGroup) {
+	defer wg.Done()
 	resp, err := http.Get("https://google.com")
 	if err != nil {
 		fmt.Printf("Ошибка %s", err.Error())
