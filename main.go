@@ -15,14 +15,16 @@ func main() {
 	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go getHttpStatus(&wg)
+		go func() {
+			getHttpStatus()
+			wg.Done()
+		}()
 	}
 	wg.Wait()
 	fmt.Println(time.Since(t))
 }
 
-func getHttpStatus(wg *sync.WaitGroup) {
-	defer wg.Done()
+func getHttpStatus() {
 	resp, err := http.Get("https://google.com")
 	if err != nil {
 		fmt.Printf("Ошибка %s", err.Error())
