@@ -8,8 +8,12 @@ import (
 
 func main() {
 	code := make(chan int)
-	go getHttpStatus(code)
-	<- code
+	for i := 0; i < 10; i++ {
+		go getHttpStatus(code)
+	}
+	for res := range code {
+		fmt.Printf("Код %d \n", res)
+	}
 }
 
 func getHttpStatus(codeCh chan int) {
@@ -18,6 +22,5 @@ func getHttpStatus(codeCh chan int) {
 		fmt.Printf("Ошибка %s", err.Error())
 		return
 	}
-	fmt.Printf("Код %d \n", resp.StatusCode)
 	codeCh <- resp.StatusCode
 }
