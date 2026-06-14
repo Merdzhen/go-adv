@@ -25,7 +25,6 @@ func main() {
 		panic(err.Error())
 	}
 	urlSlice := strings.Split(string(file), "\n")
-	fmt.Println("urlSlice", urlSlice)
 
 	respCh := make(chan int)
 	errCh := make(chan error)
@@ -33,10 +32,13 @@ func main() {
 		go ping(url, respCh, errCh)
 	}
 	
-	for range len(urlSlice) {
-		res := <- respCh
-		fmt.Println(res)
-		errRes := <- errCh
-		fmt.Println(errRes)
+	for range urlSlice {
+		select {
+		case errRes := <- errCh:
+			fmt.Println(errRes)
+		
+		case res := <- respCh:
+			fmt.Println(res)
+		}
 	}
 }
