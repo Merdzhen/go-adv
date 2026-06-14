@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sync"
 )
 
 
@@ -10,6 +11,7 @@ func main() {
 	numGoroutines := 3
 	size := len(arr) / numGoroutines
 	sumCh :=  make(chan int)
+	var wg sync.WaitGroup 
 	result := 0
 
 	for i := range numGoroutines {
@@ -18,11 +20,20 @@ func main() {
 		if i == numGoroutines - 1 {
 			end = len(arr)
 		}
-		go getSum(arr[start:end], sumCh)
+		wg.Add(1)
+		go func(subArr []int) {
+			defer wg.Done()
+			getSum(subArr, sumCh)
+		}(arr[start:end])
 	}
 
-	for range numGoroutines {
-		result += <-sumCh
+	go func() {
+		wg.Wait()
+		close(sumCh)
+	}() 
+
+	for sum := range sumCh {
+		result += sum
 	}
 
 	fmt.Println(result)
