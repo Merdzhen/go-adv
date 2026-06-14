@@ -1,39 +1,42 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"net/http"
+	"os"
+	"strings"
 )
 
-
-func main() {
-	arr := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
-	numGoroutines := 3
-	size := len(arr) / numGoroutines
-	sumCh :=  make(chan int, numGoroutines)
-	
-	result := 0
-
-	for i := range numGoroutines {
-		start := i * size
-		end := start + size
-		if i == numGoroutines - 1 {
-			end = len(arr)
-		}
-		
-		go getSum(arr[start:end], sumCh)
+func ping(url string, respCh chan int, errCh chan error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		errCh <- err
+		return
 	}
-
-	for range numGoroutines {
-		result += <- sumCh
-	}
-
-	fmt.Println(result)
+	respCh <- resp.StatusCode
 }
 
-func getSum(arr []int, sumCh chan int) {
-	var sum int
-	for _, num := range arr {
-		sum += num
+func main() {
+	path := flag.String("file", "url.txt", "path to URL file")
+	flag.Parse()
+	file, err := os.ReadFile(*path)
+	if err != nil {
+		panic(err.Error())
 	}
-	sumCh <- sum
+	urlSlice := strings.Split(string(file), "\n")
+	fmt.Println("urlSlice", urlSlice)
+
+	respCh := make(chan int)
+	errCh := make(chan error)
+	for _, url := range urlSlice {
+		go ping(url, respCh, errCh)
+	}
+	
+	for range len(urlSlice) {
+		res := <- respCh
+		fmt.Println(res)
+		errRes := <- errCh
+		fmt.Println(errRes)
+	}
 }
