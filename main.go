@@ -34,11 +34,11 @@ func main() {
 	
 	for range urlSlice {
 		select {
-		case errRes := <- errCh:
-			fmt.Println(errRes)
-		
-		case res := <- respCh:
-			fmt.Println(res)
+			case errRes := <- errCh:
+				fmt.Println(errRes)
+			
+			case res := <- respCh:
+				fmt.Println(res)
 		}
 	}
 }
