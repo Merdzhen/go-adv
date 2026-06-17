@@ -11,7 +11,7 @@ type RandomHandler struct {}
 
 func NewRandomHandler(router *http.ServeMux) {
 	handler := &RandomHandler{}
-	router.HandleFunc("/random", handler.Random())
+	router.HandleFunc("/random", handler.GetRandomNumber())
 }
 
 func (handler *RandomHandler) GetRandomNumber() http.HandlerFunc {
