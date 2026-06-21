@@ -10,11 +10,12 @@ import (
 
 func main() {
 	conf := configs.LoadConfig()
-	fmt.Println(conf)
 
 	router := http.NewServeMux()
 	hello.NewHelloHandler(router)
-	auth.NewAuthHandler(router)
+	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
+		Config: conf,
+	})
 
 	server := http.Server{
 		Addr:    ":8081",
