@@ -26,12 +26,24 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		// прочитать body
 		var payload LoginRequest
 		err := json.NewDecoder(req.Body).Decode(&payload)
+		
 		if err != nil {
 			res.Json(w, err.Error(), 400)
+			return
 		}
+
+		if payload.Email == "" {
+      res.Json(w, "Email required", 400)
+      return
+    }
+
+		if payload.Password == "" {
+      res.Json(w, "Password required", 400)
+      return
+    }
+
 		fmt.Println(payload)
 		data := LoginResponse{
 			Token: "123",
