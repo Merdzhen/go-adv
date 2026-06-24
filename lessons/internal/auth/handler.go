@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"go/adv-demo/configs"
 	"go/adv-demo/pkg/request"
 	"go/adv-demo/pkg/response"
@@ -40,6 +39,14 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 
 func (handler *AuthHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println("register")
+		_, err := request.HandleBody[RegisterRequest](w, req)
+		if err != nil {
+			return
+		}
+
+		data := RegisterResponse{
+			Token: "123",
+		}
+		response.Json(w, data, 200)
 	}
 }
