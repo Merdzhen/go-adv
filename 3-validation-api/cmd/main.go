@@ -10,9 +10,9 @@ import (
 func main() {
 	conf := &config.Config{
 		User: config.UserConfig{
-			Email:    "test@example.com",
-			Password: "super-secret-password",
-			Address:  "smtp.gmail.com:587",
+			Address: "localhost:1025",
+			Email:   "test@test.com",
+			Password: "",
 		},
 	}
 

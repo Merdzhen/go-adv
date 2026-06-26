@@ -4,6 +4,8 @@ type UserConfig struct {
 	Email    string
 	Password string
 	Address  string
+	Host string
+	Port int
 }
 
 type Config struct {
