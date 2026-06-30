@@ -5,11 +5,13 @@ import (
 	"go/adv-demo/configs"
 	"go/adv-demo/internal/auth"
 	"go/adv-demo/internal/hello"
+	"go/adv-demo/pkg/db"
 	"net/http"
 )
 
 func main() {
 	conf := configs.LoadConfig()
+	_ = db.NewDb(conf)
 
 	router := http.NewServeMux()
 	hello.NewHelloHandler(router)
