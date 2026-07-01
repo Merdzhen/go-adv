@@ -11,7 +11,13 @@ import (
 
 func main() {
 	conf := configs.LoadConfig()
-	_ = db.NewDb(conf)
+
+	database := db.NewDb(conf)
+	if err := database.CheckConnection(); err != nil {
+      fmt.Printf("БД недоступна: %v\n", err)
+  } else {
+      fmt.Println("Успешное подключение к базе данных!")
+  }
 
 	router := http.NewServeMux()
 	hello.NewHelloHandler(router)
