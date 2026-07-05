@@ -14,7 +14,7 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	router.HandleFunc("POST /link", handler.Create())
 	router.HandleFunc("PATCH /link/{id}", handler.Update())
 	router.HandleFunc("DELETE /link/{id}", handler.Delete())
-	router.HandleFunc("GET /{alias}", handler.Goto())
+	router.HandleFunc("GET /{hash}", handler.Goto())
 }
 
 func (handler *LinkHandler) Create() http.HandlerFunc {
@@ -25,21 +25,21 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 
 func (handler *LinkHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		alias := req.PathValue("id")
-		fmt.Printf("Update id: %s\n", alias)
+		id := req.PathValue("id")
+		fmt.Printf("Update id: %s\n", id)
 	}
 }
 
 func (handler *LinkHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		alias := req.PathValue("id")
-		fmt.Printf("Delete id: %s\n", alias)
+		id := req.PathValue("id")
+		fmt.Printf("Delete id: %s\n", id)
 	}
 }
 
 func (handler *LinkHandler) Goto() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		alias := req.PathValue("alias")
-		fmt.Printf("Go to alias: %s\n", alias)
+		hash := req.PathValue("hash")
+		fmt.Printf("Go to alias: %s\n", hash)
 	}
 }
