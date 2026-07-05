@@ -2,6 +2,8 @@ package link
 
 import (
 	"fmt"
+	"go/adv-demo/pkg/request"
+	"go/adv-demo/pkg/response"
 	"net/http"
 )
 
@@ -25,7 +27,21 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 
 func (handler *LinkHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println("Create Link")
+		body, err := request.HandleBody[LinkCreateRequest](w, req)
+		if err != nil {
+			return
+		}
+
+		// эти 2 сстроки должны быть в сервисном слое, но оставляем тут для простоты
+		link := NewLink(body.Url) // теоретически может быть дублировние хэша при создании ссылки и это приведет к ошибке, пока это опускаем
+		createdLink, err := handler.LinkRepository.Create(link)
+		
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		response.Json(w, createdLink, 201)
 	}
 }
 

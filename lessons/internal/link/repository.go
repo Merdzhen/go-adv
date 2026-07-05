@@ -14,6 +14,11 @@ func NewLinkRepository(database *db.Db) *LinkRepository {
 	}
 }
 
-func (repo *LinkRepository) Create(link *Link) {
-
+func (repo *LinkRepository) Create(link *Link) (*Link, error) {
+	// repo.Database.DB.Table("link").Create(link) - полный вариант, но можем опустить Table. тк link это gorm модель, понимает в какую таблицу нужно добавить 
+	result := repo.Database.DB.Create(link)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return link, nil
 }
