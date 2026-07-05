@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"go/adv-demo/configs"
 	"go/adv-demo/internal/auth"
-	"go/adv-demo/internal/hello"
+	"go/adv-demo/internal/link"
 	"go/adv-demo/pkg/db"
 	"net/http"
 )
@@ -14,16 +14,16 @@ func main() {
 
 	database := db.NewDb(conf)
 	if err := database.CheckConnection(); err != nil {
-      fmt.Printf("БД недоступна: %v\n", err)
-  } else {
-      fmt.Println("Успешное подключение к базе данных!")
-  }
+		fmt.Printf("БД недоступна: %v\n", err)
+	} else {
+		fmt.Println("Успешное подключение к базе данных!")
+	}
 
 	router := http.NewServeMux()
-	hello.NewHelloHandler(router)
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config: conf,
 	})
+	link.NewLinkHandler(router, link.LinkHandlerDeps{})
 
 	server := http.Server{
 		Addr:    ":8081",
