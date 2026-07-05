@@ -19,11 +19,15 @@ func main() {
 		fmt.Println("Успешное подключение к базе данных!")
 	}
 
+	linkRepository := link.NewLinkRepository(database)
+
 	router := http.NewServeMux()
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config: conf,
 	})
-	link.NewLinkHandler(router, link.LinkHandlerDeps{})
+	link.NewLinkHandler(router, link.LinkHandlerDeps{
+		LinkRepository: linkRepository,
+	})
 
 	server := http.Server{
 		Addr:    ":8081",
