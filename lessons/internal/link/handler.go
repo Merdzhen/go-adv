@@ -35,7 +35,7 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 		// эти 2 сстроки должны быть в сервисном слое, но оставляем тут для простоты
 		link := NewLink(body.Url) // теоретически может быть дублировние хэша при создании ссылки и это приведет к ошибке, пока это опускаем
 		createdLink, err := handler.LinkRepository.Create(link)
-		
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -62,6 +62,11 @@ func (handler *LinkHandler) Delete() http.HandlerFunc {
 func (handler *LinkHandler) Goto() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		hash := req.PathValue("hash")
-		fmt.Printf("Go to alias: %s\n", hash)
+		link, err := handler.LinkRepository.GetByHash(hash)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Redirect(w, req, link.Url, http.StatusTemporaryRedirect)
 	}
 }
