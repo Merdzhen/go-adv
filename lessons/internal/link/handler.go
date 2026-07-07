@@ -32,9 +32,17 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 			return
 		}
 
-		// эти 2 сстроки должны быть в сервисном слое, но оставляем тут для простоты
-		link := NewLink(body.Url) // теоретически может быть дублировние хэша при создании ссылки и это приведет к ошибке, пока это опускаем
-		createdLink, err := handler.LinkRepository.Create(link)
+		// service
+		link := NewLink(body.Url)
+		for {
+			existedLink, _ := handler.LinkRepository.GetByHash(link.Hash)
+			if existedLink == nil {
+				break
+			}
+			link.GenerateHash()
+		}
+		createdLink, err := handler.LinkRepository.Create(link) // можно и тут проверять - есть ли ошибка при создания дубля, но и проверка с GetByHash тоже ок
+		// service [end]
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
