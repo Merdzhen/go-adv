@@ -3,21 +3,22 @@ package link
 import (
 	"go/adv-demo/pkg/db"
 
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
-type LinkRepository struct{
+type LinkRepository struct {
 	Database *db.Db
 }
 
 func NewLinkRepository(database *db.Db) *LinkRepository {
-	return &LinkRepository {
+	return &LinkRepository{
 		Database: database,
 	}
 }
 
 func (repo *LinkRepository) Create(link *Link) (*Link, error) {
-	// repo.Database.DB.Table("link").Create(link) - полный вариант, но можем опустить Table. тк link это gorm модель, понимает в какую таблицу нужно добавить 
+	// repo.Database.DB.Table("link").Create(link) - полный вариант, но можем опустить Table. тк link это gorm модель, понимает в какую таблицу нужно добавить
 	result := repo.Database.DB.Create(link)
 	if result.Error != nil {
 		return nil, result.Error
@@ -46,6 +47,9 @@ func (repo *LinkRepository) Delete(id uint) error {
 	result := repo.Database.DB.Delete(&Link{}, id)
 	if result.Error != nil {
 		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
 	}
 	return nil
 }
