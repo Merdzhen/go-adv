@@ -1,7 +1,6 @@
 package link
 
 import (
-	"fmt"
 	"go/adv-demo/pkg/request"
 	"go/adv-demo/pkg/response"
 	"net/http"
@@ -10,11 +9,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type LinkHandlerDeps struct{
+type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
 }
 
-type LinkHandler struct{
+type LinkHandler struct {
 	LinkRepository *LinkRepository
 }
 
@@ -46,7 +45,6 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 		}
 		createdLink, err := handler.LinkRepository.Create(link) // можно и тут проверять - есть ли ошибка при создания дубля, но и проверка с GetByHash тоже ок
 		// service [end]
-
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -72,11 +70,10 @@ func (handler *LinkHandler) Update() http.HandlerFunc {
 		// service (бизнес-логика)
 		link, err := handler.LinkRepository.Update(&Link{
 			Model: gorm.Model{ID: uint(id)},
-			Url: body.Url,
-			Hash: body.Hash,
+			Url:   body.Url,
+			Hash:  body.Hash,
 		})
 		// service [end]
-
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -87,8 +84,19 @@ func (handler *LinkHandler) Update() http.HandlerFunc {
 
 func (handler *LinkHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		id := req.PathValue("id")
-		fmt.Printf("Delete id: %s\n", id)
+		idString := req.PathValue("id")
+		id, err := strconv.ParseUint(idString, 10, 32)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		err = handler.LinkRepository.Delete(uint(id))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		response.Json(w, nil, 200)
 	}
 }
 
