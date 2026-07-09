@@ -5,6 +5,9 @@ import (
 	"go/adv-demo/pkg/request"
 	"go/adv-demo/pkg/response"
 	"net/http"
+	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type LinkHandlerDeps struct{
@@ -32,7 +35,7 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 			return
 		}
 
-		// service
+		// service (бизнес-логика)
 		link := NewLink(body.Url)
 		for {
 			existedLink, _ := handler.LinkRepository.GetByHash(link.Hash)
@@ -55,8 +58,30 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 
 func (handler *LinkHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		id := req.PathValue("id")
-		fmt.Printf("Update id: %s\n", id)
+		body, err := request.HandleBody[LinkUpdateRequest](w, req)
+		if err != nil {
+			return
+		}
+		idString := req.PathValue("id")
+		id, err := strconv.ParseUint(idString, 10, 32)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// service (бизнес-логика)
+		link, err := handler.LinkRepository.Update(&Link{
+			Model: gorm.Model{ID: uint(id)},
+			Url: body.Url,
+			Hash: body.Hash,
+		})
+		// service [end]
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		response.Json(w, link, 200)
 	}
 }
 
