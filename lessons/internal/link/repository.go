@@ -2,6 +2,8 @@ package link
 
 import (
 	"go/adv-demo/pkg/db"
+
+	"gorm.io/gorm/clause"
 )
 
 type LinkRepository struct{
@@ -33,7 +35,7 @@ func (repo *LinkRepository) GetByHash(hash string) (*Link, error) {
 }
 
 func (repo *LinkRepository) Update(link *Link) (*Link, error) {
-	result := repo.Database.Updates(link)
+	result := repo.Database.DB.Clauses(clause.Returning{}).Updates(link) // Clauses(clause.Returning{}) чтобы отдавалось измнененный link полностью
 	if result.Error != nil {
 		return nil, result.Error
 	}
