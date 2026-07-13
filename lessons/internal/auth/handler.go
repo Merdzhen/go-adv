@@ -2,6 +2,7 @@ package auth
 
 import (
 	"go/adv-demo/configs"
+	"go/adv-demo/pkg/jwt"
 	"go/adv-demo/pkg/request"
 	"go/adv-demo/pkg/response"
 	"net/http"
@@ -32,16 +33,22 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		_, err = handler.AuthService.Login(body.Email, body.Password)
+		email, err := handler.AuthService.Login(body.Email, body.Password)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		token, err := jwt.NewJWT(handler.Config.Auth.Secret).Create(email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		data := LoginResponse{
-			Token: "123",
+			Token: token,
 		}
-		response.Json(w, data, 201)
+		response.Json(w, data, 200)
 	}
 }
 
@@ -52,7 +59,7 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 			return
 		}
 
-		_, err = handler.AuthService.Register(body.Email, body.Password, body.Name)
+		email, err := handler.AuthService.Register(body.Email, body.Password, body.Name)
 		if err != nil {
 			if err.Error() == ErrUserExists {
 				http.Error(w, "User already exists", http.StatusBadRequest)
@@ -61,5 +68,16 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 			http.Error(w, "Internal server error", http.StatusBadRequest)
 			return
 		}
+
+		token, err := jwt.NewJWT(handler.Config.Auth.Secret).Create(email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		data := RegisterResponse{
+			Token: token,
+		}
+		response.Json(w, data, 201)
 	}
 }
