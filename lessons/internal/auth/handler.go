@@ -28,8 +28,13 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		_, err := request.HandleBody[LoginRequest](w, req)
+		body, err := request.HandleBody[LoginRequest](w, req)
 		if err != nil {
+			return
+		}
+		_, err = handler.AuthService.Login(body.Email, body.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -46,6 +51,7 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 		if err != nil {
 			return
 		}
+
 		_, err = handler.AuthService.Register(body.Email, body.Password, body.Name)
 		if err != nil {
 			if err.Error() == ErrUserExists {
