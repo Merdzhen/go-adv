@@ -19,7 +19,7 @@ type AuthHandler struct {
 
 func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 	handler := &AuthHandler{
-		Config: deps.Config,
+		Config:      deps.Config,
 		AuthService: deps.AuthService,
 	}
 	router.HandleFunc("POST /auth/login", handler.Login())
@@ -46,6 +46,14 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		handler.AuthService.Register(body.Email, body.Password, body.Name)
+		_, err = handler.AuthService.Register(body.Email, body.Password, body.Name)
+		if err != nil {
+			if err.Error() == ErrUserExists {
+				http.Error(w, "User already exists", http.StatusBadRequest)
+				return
+			}
+			http.Error(w, "Internal server error", http.StatusBadRequest)
+			return
+		}
 	}
 }
