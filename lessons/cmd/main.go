@@ -5,6 +5,7 @@ import (
 	"go/adv-demo/configs"
 	"go/adv-demo/internal/auth"
 	"go/adv-demo/internal/link"
+	"go/adv-demo/internal/user"
 	"go/adv-demo/pkg/db"
 	"go/adv-demo/pkg/middleware"
 	"net/http"
@@ -19,18 +20,25 @@ func main() {
 	} else {
 		fmt.Println("Успешное подключение к базе данных!")
 	}
-
-	linkRepository := link.NewLinkRepository(database)
-
 	router := http.NewServeMux()
+
+	// Repositories
+	linkRepository := link.NewLinkRepository(database)
+	userRepository := user.NewUserRepository(database)
+
+	// Services
+	authservice := auth.NewAuthService(userRepository)
+
+	// Handler
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config: conf,
+		AuthService: authservice,
 	})
 	link.NewLinkHandler(router, link.LinkHandlerDeps{
 		LinkRepository: linkRepository,
 	})
 
-	//middlewares
+	// Middlewares
 	stack := middleware.Chain(
 		middleware.CORS,
 		middleware.Logging,
