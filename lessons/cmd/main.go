@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"go/adv-demo/configs"
 	"go/adv-demo/internal/auth"
@@ -9,9 +10,30 @@ import (
 	"go/adv-demo/pkg/db"
 	"go/adv-demo/pkg/middleware"
 	"net/http"
+	"time"
 )
 
 func main() {
+	ctx := context.Background()
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 2 * time.Second)
+	defer cancel()
+
+	done := make(chan struct{})
+	go func () {
+		time.Sleep(3 * time.Second)
+		close(done)
+	}()
+
+	select {
+	case <- done:
+		fmt.Println("done task")
+	case <- ctxWithTimeout.Done():
+		fmt.Println("timeout")
+	}
+
+}
+
+func main2() {
 	conf := configs.LoadConfig()
 
 	database := db.NewDb(conf)
