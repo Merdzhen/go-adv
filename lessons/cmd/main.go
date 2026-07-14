@@ -10,27 +10,18 @@ import (
 	"go/adv-demo/pkg/db"
 	"go/adv-demo/pkg/middleware"
 	"net/http"
-	"time"
 )
 
 func main() {
+	type key int
+	const EmailKey key = 0
 	ctx := context.Background()
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, 2 * time.Second)
-	defer cancel()
-
-	done := make(chan struct{})
-	go func () {
-		time.Sleep(3 * time.Second)
-		close(done)
-	}()
-
-	select {
-	case <- done:
-		fmt.Println("done task")
-	case <- ctxWithTimeout.Done():
-		fmt.Println("timeout")
+	ctxWithValue := context.WithValue(ctx, EmailKey, "a@a.ru")
+	if userEmail, ok := ctxWithValue.Value(EmailKey).(string); ok {
+		fmt.Println(userEmail)
+	} else {
+		fmt.Println("no value")
 	}
-
 }
 
 func main2() {
@@ -53,7 +44,7 @@ func main2() {
 
 	// Handler
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
-		Config: conf,
+		Config:      conf,
 		AuthService: authservice,
 	})
 	link.NewLinkHandler(router, link.LinkHandlerDeps{
