@@ -1,6 +1,7 @@
 package link
 
 import (
+	"go/adv-demo/configs"
 	"go/adv-demo/pkg/middleware"
 	"go/adv-demo/pkg/request"
 	"go/adv-demo/pkg/response"
@@ -12,6 +13,7 @@ import (
 
 type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
+	Config *configs.Config
 }
 
 type LinkHandler struct {
@@ -23,8 +25,8 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 		LinkRepository: deps.LinkRepository,
 	}
 	router.HandleFunc("POST /link", handler.Create())
-	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.Update()))
-	router.Handle("DELETE /link/{id}", middleware.IsAuthed(handler.Delete()))
+	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.Update(), deps.Config))
+	router.Handle("DELETE /link/{id}", middleware.IsAuthed(handler.Delete(), deps.Config))
 	router.HandleFunc("GET /{hash}", handler.Goto())
 }
 
