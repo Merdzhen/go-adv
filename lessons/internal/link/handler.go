@@ -1,6 +1,7 @@
 package link
 
 import (
+	"fmt"
 	"go/adv-demo/configs"
 	"go/adv-demo/pkg/middleware"
 	"go/adv-demo/pkg/request"
@@ -59,6 +60,10 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 
 func (handler *LinkHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+		email, ok := req.Context().Value(middleware.ContextEmailKey).(string)
+		if ok {
+			fmt.Println("email", email)
+		}
 		body, err := request.HandleBody[LinkUpdateRequest](w, req)
 		if err != nil {
 			return
@@ -77,6 +82,7 @@ func (handler *LinkHandler) Update() http.HandlerFunc {
 			Hash:  body.Hash,
 		})
 		// service [end]
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
