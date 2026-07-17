@@ -28,7 +28,7 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	router.HandleFunc("POST /link", handler.Create())
 	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.Update(), deps.Config))
 	router.Handle("DELETE /link/{id}", middleware.IsAuthed(handler.Delete(), deps.Config))
-	// router.HandleFunc("GET /{hash}", handler.Goto())
+	router.HandleFunc("GET /{hash}", handler.Goto())
 	router.Handle("GET /link", middleware.IsAuthed(handler.GetAll(), deps.Config))
 }
 
@@ -106,6 +106,18 @@ func (handler *LinkHandler) Delete() http.HandlerFunc {
 			return
 		}
 		response.Json(w, nil, 200)
+	}
+}
+
+func (handler *LinkHandler) Goto() http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		hash := req.PathValue("hash")
+		link, err := handler.LinkRepository.GetByHash(hash)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Redirect(w, req, link.Url, http.StatusTemporaryRedirect)
 	}
 }
 
