@@ -68,7 +68,7 @@ func (repo *LinkRepository) GetAll(limit, offset int) []Link {
 	repo.Database.
 		Table("links").
 		Where("deleted_at is null").
-		Order("id desc").
+		Order("id asc").
 		Limit(limit).
 		Offset(offset).
 		Scan(&links)

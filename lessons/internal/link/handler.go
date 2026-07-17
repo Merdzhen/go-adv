@@ -14,7 +14,7 @@ import (
 
 type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
-	Config *configs.Config
+	Config         *configs.Config
 }
 
 type LinkHandler struct {
@@ -83,7 +83,6 @@ func (handler *LinkHandler) Update() http.HandlerFunc {
 			Hash:  body.Hash,
 		})
 		// service [end]
-
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -110,18 +109,6 @@ func (handler *LinkHandler) Delete() http.HandlerFunc {
 	}
 }
 
-// func (handler *LinkHandler) Goto() http.HandlerFunc {
-// 	return func(w http.ResponseWriter, req *http.Request) {
-// 		hash := req.PathValue("hash")
-// 		link, err := handler.LinkRepository.GetByHash(hash)
-// 		if err != nil {
-// 			http.Error(w, err.Error(), http.StatusNotFound)
-// 			return
-// 		}
-// 		http.Redirect(w, req, link.Url, http.StatusTemporaryRedirect)
-// 	}
-// }
-
 func (handler *LinkHandler) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		limit, err := strconv.Atoi(req.URL.Query().Get("limit"))
@@ -132,8 +119,15 @@ func (handler *LinkHandler) GetAll() http.HandlerFunc {
 
 		offset, err := strconv.Atoi(req.URL.Query().Get("offset"))
 		if err != nil {
-			http.Error(w, "Invalid limit", http.StatusBadRequest)
+			http.Error(w, "Invalid offset", http.StatusBadRequest)
 			return
 		}
+
+		count := handler.LinkRepository.Count()
+		links := handler.LinkRepository.GetAll(limit, offset)
+		response.Json(w, GetAllLinksResponse{
+			Links: links,
+			Count: count,
+		}, 200)
 	}
 }
