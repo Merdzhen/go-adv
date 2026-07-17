@@ -63,4 +63,5 @@ func (repo *LinkRepository) GetLinks(limit, offset int) []Link {
 		Limit(limit).
 		Offset(offset).
 		Scan(&links)
+	return links
 }
