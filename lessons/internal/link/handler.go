@@ -28,7 +28,8 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	router.HandleFunc("POST /link", handler.Create())
 	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.Update(), deps.Config))
 	router.Handle("DELETE /link/{id}", middleware.IsAuthed(handler.Delete(), deps.Config))
-	router.HandleFunc("GET /{hash}", handler.Goto())
+	// router.HandleFunc("GET /{hash}", handler.Goto())
+	router.Handle("GET /link", middleware.IsAuthed(handler.GetAll(), deps.Config))
 }
 
 func (handler *LinkHandler) Create() http.HandlerFunc {
@@ -109,14 +110,30 @@ func (handler *LinkHandler) Delete() http.HandlerFunc {
 	}
 }
 
-func (handler *LinkHandler) Goto() http.HandlerFunc {
+// func (handler *LinkHandler) Goto() http.HandlerFunc {
+// 	return func(w http.ResponseWriter, req *http.Request) {
+// 		hash := req.PathValue("hash")
+// 		link, err := handler.LinkRepository.GetByHash(hash)
+// 		if err != nil {
+// 			http.Error(w, err.Error(), http.StatusNotFound)
+// 			return
+// 		}
+// 		http.Redirect(w, req, link.Url, http.StatusTemporaryRedirect)
+// 	}
+// }
+
+func (handler *LinkHandler) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		hash := req.PathValue("hash")
-		link, err := handler.LinkRepository.GetByHash(hash)
+		limit, err := strconv.Atoi(req.URL.Query().Get("limit"))
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, "Invalid limit", http.StatusBadRequest)
 			return
 		}
-		http.Redirect(w, req, link.Url, http.StatusTemporaryRedirect)
+
+		offset, err := strconv.Atoi(req.URL.Query().Get("offset"))
+		if err != nil {
+			http.Error(w, "Invalid limit", http.StatusBadRequest)
+			return
+		}
 	}
 }
