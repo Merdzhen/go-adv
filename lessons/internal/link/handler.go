@@ -3,7 +3,7 @@ package link
 import (
 	"fmt"
 	"go/adv-demo/configs"
-	"go/adv-demo/internal/stat"
+	"go/adv-demo/pkg/di"
 	"go/adv-demo/pkg/middleware"
 	"go/adv-demo/pkg/request"
 	"go/adv-demo/pkg/response"
@@ -15,13 +15,13 @@ import (
 
 type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
-	StatRepository *stat.StatRepository
+	StatRepository di.IStatRepository
 	Config         *configs.Config
 }
 
 type LinkHandler struct {
 	LinkRepository *LinkRepository
-	StatRepository *stat.StatRepository
+	StatRepository di.IStatRepository
 }
 
 func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
@@ -121,7 +121,7 @@ func (handler *LinkHandler) Goto() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		handler.StatRepository.AddClick(link.ID) // не оптимальный метод
+		handler.StatRepository.AddClick(link.ID)
 		http.Redirect(w, req, link.Url, http.StatusTemporaryRedirect)
 	}
 }
