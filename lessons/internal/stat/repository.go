@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 type StatRepository struct {
@@ -43,9 +44,17 @@ func (repo *StatRepository) GetStats(by string, from, to time.Time) []GetStatRes
 	case GroupByMonth:
 		periodRequest = "YYYY-MM"
 	}
-	repo.DB.Table("stats").
+
+	//пример использования gorm.Session
+	query := repo.DB.Table("stats").
 		Select("to_char(date, ?) as period, sum(clicks)", periodRequest).
-		Where("date BETWEEN ? and ?", from, to).
+		Session(&gorm.Session{})
+
+	if true {
+		query = query.Where("clicks > 2")
+	}
+	
+	query = query.Where("date BETWEEN ? and ?", from, to).
 		Group("period").
 		Order("period").
 		Scan(&stats)
