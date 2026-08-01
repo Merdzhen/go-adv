@@ -5,20 +5,21 @@ import (
 	"go/adv-demo/configs"
 	"go/adv-demo/pkg/middleware"
 	"net/http"
+	"strings"
 	"time"
 )
 
 const (
-	FilterByDay = "day"
+	FilterByDay   = "day"
 	FilterByMonth = "month"
 )
 
 type StatHandlerDeps struct {
 	StatRepository *StatRepository
-	Config *configs.Config
+	Config         *configs.Config
 }
 
-type StatHandler struct{
+type StatHandler struct {
 	StatRepository *StatRepository
 }
 
@@ -41,13 +42,13 @@ func (handler *StatHandler) GetAll() http.HandlerFunc {
 
 		toStr := req.URL.Query().Get("to")
 		toDate, err := time.Parse(time.DateOnly, toStr)
-		if err != nil && fromStr != ""  {
+		if err != nil && fromStr != "" {
 			http.Error(w, "Invalid 'to' date format. Expected YYYY-MM-DD", http.StatusBadRequest)
 			return
 		}
 
-		by := req.URL.Query().Get("by")
-		if by != FilterByDay && by != FilterByMonth && fromStr != ""  {
+		by := strings.ToLower(req.URL.Query().Get("by"))
+		if by != FilterByDay && by != FilterByMonth && fromStr != "" {
 			http.Error(w, "Invalid 'by' param. Expected day/month", http.StatusBadRequest)
 			return
 		}
