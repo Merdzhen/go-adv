@@ -121,7 +121,6 @@ func (handler *LinkHandler) Goto() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		// handler.StatRepository.AddClick(link.ID)
 		go handler.EventBus.Publish(event.Event{
 			Type: event.EventLinkVisited,
 			Data: link.ID,

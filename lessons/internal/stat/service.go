@@ -28,6 +28,7 @@ func (s *StatService) AddClick() {
 			id, ok := msg.Data.(uint)
 			if !ok {
 				log.Println("Bad EventLinkVisited Data ", msg.Data)
+				continue
 			}
 			s.StatRepository.AddClick(id)
 		}

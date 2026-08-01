@@ -28,15 +28,19 @@ func main() {
 	// Repositories
 	linkRepository := link.NewLinkRepository(database)
 	userRepository := user.NewUserRepository(database)
-	// statRepository := stat.NewStatRepository(database)
+	statRepository := stat.NewStatRepository(database)
 
 	// Services
-	authservice := auth.NewAuthService(userRepository)
+	authService := auth.NewAuthService(userRepository)
+	statService := stat.NewStatService(stat.StatServiceDeps{
+		EventBus: eventBus,
+		StatRepository: statRepository,
+	})
 
 	// Handler
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config:      conf,
-		AuthService: authservice,
+		AuthService: authService,
 	})
 	link.NewLinkHandler(router, link.LinkHandlerDeps{
 		LinkRepository: linkRepository,
@@ -54,6 +58,8 @@ func main() {
 		Addr:    ":8081",
 		Handler: stack(router),
 	}
+
+	go statService.AddClick()
 
 	fmt.Println("Server is listening on port 8081")
 	server.ListenAndServe()
