@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"go/adv-demo/internal/auth"
+	"go/adv-demo/internal/user"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -31,14 +32,23 @@ func initDb() *gorm.DB {
 	return db
 }
 
+func initData(db *gorm.DB) {
+	db.Create(&user.User{
+		Email: "test@test.ru",
+		Password: "$2a$10$8hJl9udlW5jF1mQWAqrS4Orew3GbWkzdXOjI9l187KwkGidTQCi76",
+		Name: "test",
+	})
+}
+
 func TestLoginSuccess(t *testing.T) {
 	db := initDb() // подготовка
+	initData(db)
 
 	ts := httptest.NewServer(App())
 	defer ts.Close()
 
 	data, _ := json.Marshal(&auth.LoginRequest{
-		Email:    "mail@melu4.rur",
+		Email:    "test@test.ru",
 		Password: "123",
 	})
 
