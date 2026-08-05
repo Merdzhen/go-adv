@@ -5,22 +5,44 @@ import (
 	"encoding/json"
 	"go/adv-demo/internal/auth"
 	"io"
-
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
+
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
+func initDb() *gorm.DB {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic(err)
+	}
+
+	db, err := gorm.Open(postgres.Open(os.Getenv("DSN")), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	return db
+}
+
 func TestLoginSuccess(t *testing.T) {
+	db := initDb() // подготовка
+
 	ts := httptest.NewServer(App())
 	defer ts.Close()
-	
+
 	data, _ := json.Marshal(&auth.LoginRequest{
-		Email: "mail@melu4.rur",
+		Email:    "mail@melu4.rur",
 		Password: "123",
 	})
 
-	res, err := http.Post(ts.URL + "/auth/login", "application/json", bytes.NewReader(data))
+	res, err := http.Post(ts.URL+"/auth/login", "application/json", bytes.NewReader(data))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,14 +52,14 @@ func TestLoginSuccess(t *testing.T) {
 		t.Fatalf("Expected %d status code, got %d", 200, res.StatusCode)
 	}
 
-	body, err := io.ReadAll(res.Body) 
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	var resData auth.LoginResponse
 	err = json.Unmarshal(body, &resData)
-		if err != nil {
+	if err != nil {
 		t.Fatal(err)
 	}
 
@@ -46,17 +68,16 @@ func TestLoginSuccess(t *testing.T) {
 	}
 }
 
-
 func TestLoginFail(t *testing.T) {
 	ts := httptest.NewServer(App())
 	defer ts.Close()
-	
+
 	data, _ := json.Marshal(&auth.LoginRequest{
-		Email: "mail@melu4.rur",
+		Email:    "mail@melu4.rur",
 		Password: "wrong",
 	})
 
-	res, err := http.Post(ts.URL + "/auth/login", "application/json", bytes.NewReader(data))
+	res, err := http.Post(ts.URL+"/auth/login", "application/json", bytes.NewReader(data))
 	if err != nil {
 		t.Fatal(err)
 	}
