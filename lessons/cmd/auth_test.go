@@ -40,8 +40,15 @@ func initData(db *gorm.DB) {
 	})
 }
 
+func removeData(db *gorm.DB) {
+	//Unscoped для обхода софт делит
+	db.Unscoped().
+		Where("email = ?", "test@test.ru").
+		Delete(&user.User{})
+}
+
 func TestLoginSuccess(t *testing.T) {
-	db := initDb() // подготовка
+	db := initDb()
 	initData(db)
 
 	ts := httptest.NewServer(App())
@@ -76,14 +83,18 @@ func TestLoginSuccess(t *testing.T) {
 	if resData.Token == "" {
 		t.Fatal("Token empty")
 	}
+	removeData(db)
 }
 
 func TestLoginFail(t *testing.T) {
+	db := initDb()
+	initData(db)
+
 	ts := httptest.NewServer(App())
 	defer ts.Close()
 
 	data, _ := json.Marshal(&auth.LoginRequest{
-		Email:    "mail@melu4.rur",
+		Email:    "test@test.ru",
 		Password: "wrong",
 	})
 
@@ -96,4 +107,5 @@ func TestLoginFail(t *testing.T) {
 	if res.StatusCode != 401 {
 		t.Fatalf("Expected %d status code, got %d", 401, res.StatusCode)
 	}
+	removeData(db)
 }
