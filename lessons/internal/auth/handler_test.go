@@ -43,11 +43,14 @@ func bootstrap() (*auth.AuthHandler, sqlmock.Sqlmock, error) {
 }
 
 func TestLoginSuccess(t *testing.T) {
-	handler, _, err := bootstrap()
+	handler, mock, err := bootstrap()
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
+	rows := sqlmock.NewRows([]string{"email", "password"}).
+		AddRow("test@test.ru", "$2a$10$8hJl9udlW5jF1mQWAqrS4Orew3GbWkzdXOjI9l187KwkGidTQCi76")
+	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	data, _ := json.Marshal(&auth.LoginRequest{
 		Email:    "test@test.ru",
 		Password: "123",
